@@ -1,0 +1,113 @@
+# version: "3.8"
+
+services:
+  # User Service
+  user-service:
+    build: ./User-Service
+    ports:
+      - "5001:5001"
+    depends_on:
+      - user-db
+    env_file:
+      - ./User-Service/.env
+    networks:
+      - backend
+
+  # Event Service
+  event-service:
+    build: ./Event_Service
+    ports:
+      - "5002:5002"
+    depends_on:
+      - event-db
+    env_file:
+      - ./Event_Service/.env
+    networks:
+      - backend
+
+  # Booking Service
+  booking-service:
+    build: ./Booking_Service
+    ports:
+      - "5003:5003"
+    depends_on:
+      - booking-db
+    env_file:
+      - ./Booking_Service/.env
+    networks:
+      - backend
+
+  # Notification Service
+  notification-service:
+    build: ./Notification_Service
+    ports:
+      - "5004:5004"
+    depends_on:
+      - rabbitmq
+    env_file:
+      - ./Notification_Service/.env
+    networks:
+      - backend
+
+  # User Service Database 
+  user-db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: event-user
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: user_db
+    ports:
+      - "5433:5432"
+    networks:
+      - backend
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+
+  # Event Service Database 
+  event-db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: event-user
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: event_db
+    ports:
+      - "5434:5432" 
+    networks:
+      - backend
+    volumes:
+      - event_db_data:/var/lib/postgresql/data
+
+  # Booking Service Database 
+  booking-db: 
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: event-user
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: booking_db
+    ports:
+      - "5435:5432" 
+    networks:
+      - backend
+    volumes:
+      - booking_db_data:/var/lib/postgresql/data
+
+  # RabbitMQ for Notifications
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - backend
+
+networks:
+  backend:
+
+volumes:
+  user_db_data:
+  event_db_data:
+  booking_db_data:
