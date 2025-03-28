@@ -1,0 +1,234 @@
+# User Database
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-db
+  namespace: online-event-booking-mishal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-db
+  template:
+    metadata:
+      labels:
+        app: user-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: user_db_user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: user_db_password
+        - name: POSTGRES_DB
+          value: "user-db"
+        volumeMounts:
+        - name: user-init-script
+          mountPath: /docker-entrypoint-initdb.d/
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+      volumes:
+      - name: user-init-script
+        configMap:
+          name: user-db-init-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-db
+  namespace: online-event-booking-mishal
+spec:
+  selector:
+    app: user-db
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+  type: ClusterIP
+---
+# Event Database
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-db
+  namespace: online-event-booking-mishal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-db
+  template:
+    metadata:
+      labels:
+        app: event-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: event_db_user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: event_db_password
+        - name: POSTGRES_DB
+          value: "event-db"
+        volumeMounts:
+        - name: event-init-script
+          mountPath: /docker-entrypoint-initdb.d/
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+      volumes:
+      - name: event-init-script
+        configMap:
+          name: event-db-init-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-db
+  namespace: online-event-booking-mishal
+spec:
+  selector:
+    app: event-db
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+  type: ClusterIP
+---
+# Booking Database
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booking-db
+  namespace: online-event-booking-mishal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booking-db
+  template:
+    metadata:
+      labels:
+        app: booking-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: booking_db_user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: booking_db_password
+        - name: POSTGRES_DB
+          value: "booking-db"
+        volumeMounts:
+        - name: booking-init-script
+          mountPath: /docker-entrypoint-initdb.d/
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+      volumes:
+      - name: booking-init-script
+        configMap:
+          name: booking-db-init-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: booking-db
+  namespace: online-event-booking-mishal
+spec:
+  selector:
+    app: booking-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+# Database Initialization ConfigMaps
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-db-init-script
+  namespace: online-event-booking-mishal
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL
+    );
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-db-init-script
+  namespace: online-event-booking-mishal
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS events (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      date DATE NOT NULL,
+      capacity INTEGER NOT NULL,
+      booked INTEGER DEFAULT 0
+    );
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: booking-db-init-script
+  namespace: online-event-booking-mishal
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS bookings (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      event_id INTEGER NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  

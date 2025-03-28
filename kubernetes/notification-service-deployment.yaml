@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: online-event-booking-mishal
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+      - name: notification-service
+        image: mishal22i1291/event-booking-platform-notification-service:latest 
+        ports:
+        - containerPort: 5004
+        env:
+        - name: PORT
+          value: "5004"
+        - name: USER_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: service-configs
+              key: user_service_url
+        - name: RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: rabbitmq_url 
+        - name: EMAIL_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: email_user
+        - name: EMAIL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: email_password
+        - name: EMAIL_FROM
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: email_from
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: online-event-booking-mishal
+spec:
+  selector:
+    app: notification-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5004
+  type: ClusterIP
+
