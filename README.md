@@ -1,6 +1,6 @@
 # Event Booking Platform
 
-## 🏰 Architecture Overview
+## 🏠 Architecture Overview
 The **Event Booking Platform** is a microservices-based system built using **Node.js, Express.js, PostgreSQL, and RabbitMQ**. It follows an event-driven architecture where services communicate asynchronously via RabbitMQ.
 
 ### ✨ Key Features
@@ -8,10 +8,11 @@ The **Event Booking Platform** is a microservices-based system built using **Nod
 - Event creation and listing  
 - Booking system for users  
 - Notification service to send emails  
+- Kubernetes deployment support  
 
 ---
 
-## 🏦 System Architecture
+## 🏶 System Architecture
 The system consists of **four microservices**:
 
 ### 1. **User Service**
@@ -46,40 +47,52 @@ The system consists of **four microservices**:
 ## 🗂 Project Structure
 ```
 event-booking-platform/
-🗂 Booking_Service/
+📂 Booking_Service/
     🗁 .env
-    🗋 controllers.js
-    🗋 db.js
-    🗋 index.js
-    🗋 models.js
-    🗋 package.json
-    🗋 rabbitmqPublisher.js
-    🗋 routes.js
+    📋 controllers.js
+    📋 db.js
+    📋 index.js
+    📋 models.js
+    📋 package.json
+    📋 rabbitmqPublisher.js
+    📋 routes.js
 
-🗂 Event_Service/
+📂 Event_Service/
     🗁 .env
-    🗋 controllers.js
-    🗋 db.js
-    🗋 index.js
-    🗋 models.js
-    🗋 package.json
-    🗋 routes.js
+    📋 controllers.js
+    📋 db.js
+    📋 index.js
+    📋 models.js
+    📋 package.json
+    📋 routes.js
 
-🗂 Notification_Service/
-    🗋 index.js
-    🗋 package.json
-    🗋 rabbitConsumer.js
-    🗋 sendemail.js
-    🗋 testPublisher.js
+📂 Notification_Service/
+    📋 index.js
+    📋 package.json
+    📋 rabbitConsumer.js
+    📋 sendemail.js
+    📋 testPublisher.js
 
-🗂 User_Service/
+📂 User_Service/
     🗁 .env
-    🗋 controllers.js
-    🗋 db.js
-    🗋 index.js
-    🗋 models.js
-    🗋 package.json
-    🗋 routes.js
+    📋 controllers.js
+    📋 db.js
+    📋 index.js
+    📋 models.js
+    📋 package.json
+    📋 routes.js
+
+📂 kubernetes/
+        📋 booking-service-deployment.yaml
+        📋 event-service-deployment.yaml
+        📋 notification-service-deployment.yaml
+        📋 user-service-deployment.yaml
+        📋 configmap.yaml
+        📋 secrets.yaml
+        📋 postgres-deployment.yaml
+        📋 rabbitmq-deployment.yaml
+        📋 namespace.yaml 
+        📋 ingress.yaml
 ```
 
 ---
@@ -87,7 +100,7 @@ event-booking-platform/
 ## 🚀 How to Run
 ### 1. Clone the Repository
 ```sh
-git clone https://github.com/your-repo/event-booking-platform.git
+git clone https://github.com/mishal-A2/Booking-Online-platform--Microservices-based.git
 cd event-booking-platform
 ```
 
@@ -114,9 +127,53 @@ cd Notification_Service && node index.js
 ```
 OR use `docker-compose up` for **Docker-based deployment**.
 
+### 6. Start Services
+Run each service for deployment by port forwarding:
+user-service: 
+kubectl port-forward service/user-service -n online-event-booking-mishal 5001:80   
+
+event-service:
+kubectl port-forward service/event-service -n online-event-booking-mishal 5002:80  
+
+booking-service:
+kubectl port-forward svc/booking-service 5003:80 -n online-event-booking-mishal
+
+notificatioin-service:
+kubectl logs -n online-event-booking-mishal -l app=notification-service --tail=50 -f
+
+ingress:
+kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 8080:80
+
+
+   
+
+
 ---
 
-## 📢 Testing the APIs
+## 🌐 Deploying with Kubernetes
+
+### 1. Apply Kubernetes Configurations
+```sh
+kubectl apply -f kubernetes/deployment/
+kubectl apply -f kubernetes/services/
+kubectl apply -f kubernetes/ingress/
+```
+
+### 3. Check Pod and Service Status
+```sh
+kubectl get pods
+kubectl get services
+```
+
+### 4. Access Services via Ingress
+Make sure ingress is enabled, then access services using:
+```sh
+kubectl get ingress
+```
+
+---
+
+## 🛠️ Testing the APIs
 You can test the services using **Postman**.
 
 - **User Service**: `POST /register`, `POST /login`
@@ -126,11 +183,12 @@ You can test the services using **Postman**.
 
 ---
 
-## 🔧 Technologies Used
+## 🛠️ Technologies Used
 - **Node.js & Express.js** – Backend framework  
 - **PostgreSQL** – Database  
 - **RabbitMQ** – Message broker  
 - **Docker** – Containerization  
+- **Kubernetes** – Orchestration  
 - **Postman** – API testing  
 
 ---
@@ -143,3 +201,4 @@ This project is licensed under the **MIT License**.
 ## 👨‍💻 Contributors
 - Mishal Ali  
 ---
+
